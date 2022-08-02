@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteMappingsManager">
+    <list>
+      <list>
+        <remote-mappings server-id="python@sftp://root@180.184.78.79:22/var/pbx/anaconda3/envs/lj_torch131py365/bin/python3.7" />
+      </list>
+    </list>
+  </component>
+</project>

@@ -19,7 +19,7 @@ import time
 from machine_learning import Classifier, make_train_val_data, make_confusion_matrix
 from find_similarity import find_similarity_cluster
 from merge_data import groupeby_data
-
+from make_dp_data import make_dp_data, make_transformer_label_list, get_and_compare_predict_result, StratifiedKFold_sentences
 
 def get_sentence_vec_from_bert(sentences):
 
@@ -84,11 +84,11 @@ with open(os.path.join(config.sentence_data_directory,'bx_list_0.json'), 'r') as
 sentences_vec = np.load(os.path.join(config.sentence_data_directory,'my_array_0.npy'))
 dic_sentence = dict(zip(sentences, sentences_vec))
 
-n = 4
+epoch = 4
 
 # 3 聚类算法划分聚类
 while(True):
-    # cluster_result_save_path = os.path.join(config.cluster_directory, str(n) + 'epoch')
+    # cluster_result_save_path = os.path.join(config.cluster_directory, str(epoch) + 'epoch')
     # if not os.path.exists(cluster_result_save_path):
     #     os.mkdir(cluster_result_save_path)
     #
@@ -115,7 +115,7 @@ while(True):
 
 
     # 手动归类
-    new_df = pd.read_excel(os.path.join(config.cluster_directory, 'manul_define_clusters'+str(n)+'.xlsx'),index_col=0)
+    new_df = pd.read_excel(os.path.join(config.cluster_directory, 'manul_define_clusters'+str(epoch)+'.xlsx'),index_col=0)
     new_df = new_df[new_df.columns[~new_df.columns.str.contains('named')]]
     # 重新整理数据，准备训练 或者 重新进行聚类
     not_classified_sentences, classified_sentences, classified_dic = reorganize_data(new_df, sentences)
@@ -125,10 +125,11 @@ while(True):
     sentences_vec = np.array(not_classified_sentences_vecs)
 
     # 手动选择是否要进行分类操作
+    train_sentences, train_labels, dic_num2label, dic_label2num = make_train_val_data(classified_dic)
     # fenlei = input('是否要进行分类操作，输入1或者0：')
-    fenlei = '1'
+    fenlei = '2'
     if fenlei=='1':
-        train_sentences, train_labels, dic_num2label, dic_label2num = make_train_val_data(classified_dic)
+
         classifier = Classifier(dic_sentence, dic_num2label, train_sentences, train_labels)
         classifier.split_data(test_size=0.3, random_state=42)
         classifier.svm_fit_predict_val_sentence()
@@ -141,21 +142,21 @@ while(True):
         misclassified_sentences = val_sentences[~(val_sentences['原来所属聚类']==val_sentences['预测所属聚类'])]
         # 按意图进行groupby
         misclassified_sentences = groupeby_data(misclassified_sentences,['原来所属聚类','预测所属聚类'])
-        filename = os.path.join(config.cluster_directory, 'misclassified_sentences_{}.xlsx'.format(n))
+        filename = os.path.join(config.cluster_directory, 'misclassified_sentences_{}.xlsx'.format(epoch))
         misclassified_sentences.to_excel(filename)
 
 
 
         #预测未聚类的句子
         pred_labels = classifier.predict(not_classified_sentences)
-        filename = os.path.join(config.cluster_directory, 'not_classified_sentences_{}.xlsx'.format(n))
+        filename = os.path.join(config.cluster_directory, 'not_classified_sentences_{}.xlsx'.format(epoch))
         df_not_classified_sentences = pd.DataFrame({'sentece':not_classified_sentences, 'label':pred_labels})
         df_not_classified_sentences = groupeby_data(df_not_classified_sentences, ['label'])
         df_not_classified_sentences.to_excel(filename)
 
 
         print(123)
-        filename = os.path.join(config.cluster_directory, 'confusion_{}.xlsx'.format(n))
+        filename = os.path.join(config.cluster_directory, 'confusion_{}.xlsx'.format(epoch))
         df_confusion = make_confusion_matrix([dic_num2label[ele] for ele in classifier.val_label],classifier.predict_val_label_chinese, filename=filename)
 
 
@@ -174,6 +175,47 @@ while(True):
 
         # 类别推荐
         print(1)
+
+
+    if fenlei=='2':
+        print('制作深度学习的文件')
+        make_transformer_label_list(epoch, dic_num2label)
+        # train_ls = StratifiedKFold_sentences(train_sentences, train_labels, n_splits=3, shuffle=True)
+
+        # split_n = 1
+        # for train_sentences_, train_lables_, val_sentences_,val_lables_ in train_ls:
+        #
+        #     make_dp_data('epoch'+str(epoch)+'_'+str(split_n), dic_num2label, train_sentences_, train_lables_, data_type='train')
+        #     make_dp_data('epoch'+str(epoch)+'_'+str(split_n), dic_num2label, train_sentences, train_labels, data_type='dev')
+        #     make_dp_data('epoch'+str(epoch)+'_'+str(split_n), dic_num2label, not_classified_sentences, data_type='predict')
+        #     split_n+=1
+        #
+        #
+
+        p_directory = os.path.join(config.cluster_directory, 'epoch{}'.format(epoch))
+        with open(os.path.join(p_directory, 'label_map.json'), 'r') as f_obj:
+            label_map = json.load(f_obj)
+        label_map = dict([(value, key) for key, value in label_map.items()])
+
+        train_data_ls = []
+        test_data_ls = []
+        for directory_name in [ele for ele in os.listdir(p_directory) if ele.startswith('epoch')]:
+            train_data = get_and_compare_predict_result(label_map, dic_num2label, p_directory, directory_name, original_filename='dev.csv', predict_filename='eval.csv')
+            test_data = get_and_compare_predict_result(label_map, dic_num2label, p_directory, directory_name, original_filename='test.csv', predict_filename='predict.csv')
+            train_data_ls.append(train_data)
+            test_data_ls.append(test_data)
+
+
+        merge_train_data = pd.concat(train_data_ls, axis=1)
+        merge_train_data.to_excel(os.path.join(p_directory,'merge_train_data.xlsx'))
+
+
+        merge_test_data = pd.concat(test_data_ls, axis=1)
+        merge_test_data.to_excel(os.path.join(p_directory,'merge_test_data.xlsx'))
+        print(3)
+
+
+
 
 
 

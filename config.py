@@ -9,7 +9,7 @@ import os
 sentence_data_directory = 'data2_zhongan'
 
 #存放聚类结果
-result_directory = 'cluster_result/20220802'
+result_directory = 'cluster_result/20220803'
 cluster_directory = os.path.join(result_directory, 'extract_key_words')
 if not os.path.exists(cluster_directory):
     os.makedirs(cluster_directory)

@@ -64,8 +64,6 @@ def make_train_val_data(classified_dic):
     :return:
     '''
     label_list = [key for key, value in classified_dic.items()]
-    if len(label_list) != len(list(set(label_list))):
-        print('标签重复')
     dic_num2label = dict(zip(range(len(label_list)), label_list))
     dic_label2num = dict([val, key] for key, val in dic_num2label.items())
 

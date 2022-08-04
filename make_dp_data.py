@@ -69,7 +69,6 @@ def make_transformer_label_list(epoch, dic_num2label):
 
 
 
-
 def get_and_compare_predict_result(label_map, dic_num2label, p_directory, directory_name, original_filename, predict_filename):
 
     #所有数据所在的目录
@@ -88,8 +87,8 @@ def get_and_compare_predict_result(label_map, dic_num2label, p_directory, direct
         df['预测结果是否相同'] = df['predict_labels'] == df['cluster_labels']
 
     if 'predict' in predict_filename:
-        df.to_excel(os.path.join(directory, '待分类样本.xlsx'))
+        df.to_excel(os.path.join(directory, '待分类样本.xlsx'),index=0)
     else:
-        df.to_excel(os.path.join(directory, '训练集和验证集样本.xlsx'))
+        df.to_excel(os.path.join(directory, '训练集和验证集样本.xlsx'),index=0)
 
     return df

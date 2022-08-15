@@ -1,0 +1,15 @@
+需要pytorch版本的文件，放到 args.model_name_or_path = '../../pretrained_models/bert'
+GPU环境配置
+(lj_torch171py37) [root@iv-ybrzvtlcrn8rx7jath11 bin]# conda config --show-sources
+==> /root/.condarc <==
+channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/
+  - defaults
+show_channel_urls: True
+conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=9.2 -c pytorch
+
+安装版本 transformers
+pip install transformers -i https://mirrors.aliyun.com/pypi/simple/
+conda install -c huggingface transformers==4.21.1  #多试几次，就能安装成功 180.184.78.79安装ok

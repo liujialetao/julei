@@ -15,7 +15,6 @@ import torch
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler, TensorDataset)
 from torch.utils.data.distributed import DistributedSampler
 import time
-import config as config_config
 try:
     from torch.utils.tensorboard import SummaryWriter
 except:
@@ -25,16 +24,7 @@ except:
 from tqdm import tqdm, trange
 
 from transformers import (BertConfig, BertTokenizer,
-                             BertForSequenceClassification,
-                             # BertForSequenceClassification_CNN,
-                             # BertForSequenceClassification_LSTM,
-                             # BertForSequenceClassification_GRU,
-                             # XLNetConfig, XLNetTokenizer,
-                             # XLNetForSequenceClassification,
-                             # XLNetForSequenceClassification_LSTM,
-                             # XLNetForSequenceClassification_GRU,
-                             # AlbertConfig, AlbertTokenizer,
-                             AlbertForSequenceClassification)
+                             BertForSequenceClassification)
 
 from transformers import AdamW, get_linear_schedule_with_warmup
 
@@ -536,9 +526,8 @@ def start_train(train_args):
     #cnn
     args.filter_sizes = [3,4,5]#[int(size) for size in str(args.filter_sizes).split(',')]
     args.num_train_epochs = train_args['epochs']
-    biaoji = '5_3'
-    args.data_dir = config_config.train_directory #'cluster_api/dataset/clusters/20220808/fenlei1/epoch{}'.format(biaoji)
-    args.output_dir = config_config.save_directory#'cluster_api/results/clusters/20220808/fenlei1/epoch{}'.format(biaoji)
+    args.data_dir = '/hy-tmp/julei/bert_torch_clf/data' #'cluster_api/dataset/clusters/20220808/fenlei1/epoch{}'.format(biaoji)
+    args.output_dir = '/hy-tmp/julei/bert_torch_clf/output'#'cluster_api/results/clusters/20220808/fenlei1/epoch{}'.format(biaoji)
     args.adam_epsilon = 1e-08
     args.cache_dir = ''
     args.config_name = ''
@@ -565,7 +554,7 @@ def start_train(train_args):
     args.max_grad_norm = 1.0
     args.max_seq_length = 512
     args.max_steps = -1
-    args.model_name_or_path = '../../pretrained_models/bert'
+    args.model_name_or_path = '../pretrained_models/bert'
     args.model_type = 'bert'
     args.no_cuda = False
     args.overwrite_cache = False
@@ -723,4 +712,4 @@ def start_train(train_args):
             #results.update(result)
 
 if __name__ == '__main__':
-    start_train()
+    start_train({'epochs': 3, 'lr': 2e-05})
